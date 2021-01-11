@@ -1,0 +1,783 @@
+openapi: 3.0.0
+info:
+  title: Delilah Resto
+  description: Esta API gestionará la información del resto
+  version: 1.0.0
+servers:
+- url: http://localhost:3000
+  description: Localhost
+paths:
+  /users:
+    get:
+      tags:
+      - admin
+      summary: Obtener todos los usuarios creados
+      description: Este endpoint devolverá todos los usuarios existentes en la base de datos
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/users'
+        "401":
+          description: Error al verificar el token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 'Error en verificar el token'
+                    description: 'Error'
+        "404":
+          description: No esta autorizado a realizar esta consulta
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 'No esta autorizado a realizar esta consulta'
+                    description: 'Error'
+        
+      security:
+      - jwtAuth: []
+    post:
+      tags:
+      - client
+      summary: Crear un nuevo usuario
+      description: Crear un nuevo usuario en la base de datos
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/users'
+          text/plain:
+            schema:
+              type: string
+        required: true
+      responses:
+        "201":
+          description: usuario creado
+          content:
+            aplication/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/users'
+        "500":
+          description: No pudo crearse el usuario especificado
+  /users/{id}:
+    get:
+      tags:
+      - admin
+      - client
+      summary: Obtener usuario por ID
+      description: Obtener usuario ingresado
+      parameters:
+      - name: id
+        in: path
+        description: Id del usuario
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+          example: 1234
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/users'
+        "401":
+          description: Error al verificar el token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 'Error en verificar el token'
+                    description: 'Error'
+        "404":
+          description: No esta autorizado a realizar esta consulta
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 'No esta autorizado a realizar esta consulta'
+                    description: 'Error'
+        "500":
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/users'
+      security:
+      - jwtAuth: []
+    put:
+      tags:
+      - admin
+      - client
+      summary: Modificar un usuario especifico
+      description: Modificar un usuario creado en la base de datos
+      parameters:
+      - name: id
+        in: path
+        description: Id del usuario
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+          example: 1234
+      requestBody:
+        description: Contenido a modificar
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/usersUpdate'
+      responses:
+        "200":
+          description: El usuario fue modificado correctamente
+        "401":
+          description: Error al verificar el token
+        "404":
+          description: Su usuario no esta autorizado a realizar la siguiente accion
+        "500":
+          description: El usuario indicado no existe
+      security:
+      - jwtAuth: []
+  /login:
+    post:
+      tags:
+      - admin
+      - client
+      summary: Autenticar un usuario
+      description: Autenticar los usuarios creados en la base de datos
+      parameters:
+      - name: Login
+        in: header
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          example: application/json
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - email
+              - password
+              properties:
+                email:
+                  type: string
+                  example: 'john@mail.com'
+                  description: 'Email'
+                password:
+                  type: string
+                  example: '123'
+                  description: 'Password'
+        required: true
+      responses:
+        "200":
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: '1mx6L2L7AMdEsyKy5LW9s8gt6mBxdICwosVn5sjhbwykOoQJFUru6752dwsj2THN'
+                    description: 'Token'
+        "400":
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 'Usuario o contraseña incorrecta'
+                    description: 'Error'
+  /products:
+    get:
+      tags:
+      - admin
+      - client
+      summary: Obtener todos los productos creados
+      description: Este endpoint devolverá todos los productos existentes en la base de datos
+      responses:
+        "201":
+          description: Producto agregado correctamente
+        "404":
+          description: No existen productos creados
+    post:
+      tags:
+      - admin
+      summary: Crear un nuevo producto
+      description: Crear un nuevo producto en la base de datos
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/products'
+          text/plain:
+            schema:
+              type: string
+        required: true
+      responses:
+        "201":
+          description: Producto creado
+          content:
+            aplication/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/products'
+        "401":
+          description: Error al verificar el token    
+        "404":
+          description: No esta autorizado a realizar la siguiente accion        
+      security:
+      - jwtAuth: []
+  /products/{id}:
+    get:
+      tags:
+      - admin
+      - client
+      summary: Obtener el producto por ID
+      description: Obtener el producto indicado
+      parameters:
+      - name: id
+        in: path
+        description: Id del producto
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+          example: 1234
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/products'
+        "404":
+          description: Producto no encontrado
+    put:
+      tags:
+      - admin
+      summary: Modificar un producto especifico
+      description: Modificar un producto creado en la base de datos
+      parameters:
+      - name: id
+        in: path
+        description: Id del producto
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+          example: 1234
+      requestBody:
+        description: Contenido a modificar
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/productsUpdate'
+      responses:
+        "200":
+          description: Producto modificado
+        "401":
+          description: Error al verificar el token
+        "404":
+          description: El producto indicado no existe.
+      security:
+      - jwtAuth: []
+    delete:
+      tags:
+      - admin
+      summary: Eliminar un producto especifico
+      description: Eliminar un producto creado en la base de datos
+      parameters:
+      - name: id
+        in: path
+        description: Id del producto
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+          example: 1234
+      responses:
+        "200":
+          description: Producto eliminado
+        "401":
+          description: Error al verificar el token
+        "500":
+          description: El producto indicado no existe.
+      security:
+      - jwtAuth: []  
+  /orders:
+    get:
+      tags:
+      - admin
+      - client
+      summary: Obtener todos los pedidos creados
+      description: Este endpoint devolverá todos los pedidos existentes en la base de datos
+      responses:
+        "201":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/orders'
+        "500":
+          description: No existen pedidos creados
+      security:
+      - jwtAuth: []
+    post:
+      tags:
+      - client
+      summary: Realizar un nuevo pedido
+      description: Enviar en Postman el request body de un solo producto con su cantidad especificada. (En caso de querer agregar otro producto generar otro post indicado otro Id de Producto y su cantidad. Este mismo se va agregar a order_detail pero conforma parte de la misma orderId). Un usuario solamente puede tener una orden con estado Nueva (order_status 1). Si al agregar un producto el usuario no tiene ninguna orden con status Nueva, primero se crea la orden y luego se agrega el producto indicado. Si el usuario ya posee una orden con status Nueva, el producto enviado se agregara a la orden_detail referenciada a esa orden. Para confirmar una orden de status 1 ("nueva"), utilizar la ruta PUT/orders/:Id y pasar a "Confirmada".
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/orders'
+          text/plain:
+            schema:
+              type: string
+        required: true
+      responses:
+        "201":
+          description: Pedido creado
+          content:
+            aplication/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/orders'
+        "401":
+          description: Error al verificar el token
+      security:
+      - jwtAuth: []
+  /orders/{id}:
+    get:
+      tags:
+      - admin
+      - client
+      summary: Obtener un pedido especificado por ID
+      description: Obtener el pedido indicado
+      parameters:
+      - name: id
+        in: path
+        description: Id del pedido
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+          example: 1234
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/orders'
+        "404":
+          description: El pedido indicado no existe
+      security:
+      - jwtAuth: []
+    patch:
+      tags:
+      - admin
+      summary: Actualizar un pedido especifico
+      description: Actualizar el estado de una orden.  
+      parameters:
+      - name: id
+        in: path
+        description: Id de la orden
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+          example: 1234
+      requestBody:
+        description: Contenido a modificar
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ordersModification'
+      responses:
+        "200":
+          description: Has cambiado la orden IdOrden a IdStatus exitosamente
+        "401":
+          description: No esta autorizado a realizar esta accion
+      security:
+      - jwtAuth: []
+    put:
+      tags:
+      - client
+      summary: Actualizar un pedido especifico
+      description: Endpoint para confirmar una orden.   
+      parameters:
+      - name: id
+        in: path
+        description: Id de la orden
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+          example: 1
+      requestBody:
+        description: Contenido a modificar
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ordersUpdates'
+      responses:
+        "200":
+          description: Se ha confirmado su compra
+        "401":
+          description: Error en verificar el Token
+        "404":
+          description: La orden indicada no existe
+      security:
+      - jwtAuth: []
+    delete:
+      tags:
+      - client
+      summary: Eliminar un producto de una orden especifica
+      description: Endpoint generado para eliminar productos especificos de una orden unicamente en casos de que la orden_status sea igual a 1. Las productos no pueden ser eliminados si la orden ya fue confirmada.
+      parameters:
+      - name: id
+        in: path
+        description: Id de la orden
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+          example: 1234
+      responses:
+        "200":
+          description: El producto fue eliminado de la orden de compra
+        "401":
+          description: Error al verificar el token
+        "404":
+          description: No esta autorizado a eliminar productos de otro usuario.
+      security:
+      - jwtAuth: []  
+  /users/{id}/favorites:
+    get:
+      tags:
+      - client
+      summary: Obtener todos los productos favoritos del usuario
+      description: Obtener los favoritos del usuario
+      parameters:
+      - name: id
+        in: path
+        description: Id del usuario
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+          example: 1234
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    user:
+                      type: string
+                      example: 'johndoe'
+                      description: 'User'
+                    product_name:
+                      type: string
+                      example: 'Milanesa con papas fritas'
+                      description: 'Product'
+        "401":
+          description: No está autorizado para ver los favoritos de otro usuario
+        "404":
+          description: Aun no tienes cargado favoritos
+      security:
+      - jwtAuth: []
+    post:
+      tags:
+      - client
+      summary: Agregar nuevo favorito
+      description: Agregar nuevo favorito en la base de datos
+      parameters:
+      - name: id
+        in: path
+        description: Id del pedido
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+          example: 1234
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - productId
+              properties:
+                productId:
+                  type: number
+                  example: 1
+                  description: 'Product ID'
+      responses:
+        "200":
+          description: Se ha agregado el producto a favoritos
+        "401":
+          description: El producto indicado ya es un favorito
+        "404":
+          description: Producto no encontrado
+      security:
+      - jwtAuth: []
+    delete:
+      tags:
+      - client
+      summary: Eliminar un producto en favoritos
+      description: Eliminar un producto en favoritos
+      parameters:
+      - name: id
+        in: path
+        description: Id de la orden
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+          example: 1234
+      responses:
+        "200":
+          description: Favorito eliminado
+        "401":
+          description: No está autorizado para realizar esta acción
+        "404":
+          description: El usuario indicado no existe
+      security:
+      - jwtAuth: []  
+components:
+  schemas:
+    users:
+      required:
+      - user
+      - name
+      - last_name
+      - email
+      - phone
+      - address
+      - password
+            
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        user:
+          type: string
+          example: rfinlangie
+        name:
+          type: string
+          example: Regina
+        last_name:
+          type: string
+          example: Filangie   
+        email:
+          type: string
+          example: regina.filangie@gmail.com
+        phone:
+          type: number
+          example: 5493513222111
+        address:
+          type: string
+          example: Central Perk
+        password:
+          type: string
+          example: rf1123
+        date:
+          type: string
+          format: date
+          example: "2019-01-11"
+        status:
+          type: integer
+          example: 1
+        role:
+          type: integer
+          example: 1
+    usersUpdate:
+      required:
+      - name
+      - last_name
+      - phone
+      - address
+      - password
+            
+      type: object
+      properties:
+        name:
+          type: string
+          example: Regina
+        last_name:
+          type: string
+          example: Filangie   
+        phone:
+          type: number
+          example: 5493513222111
+        address:
+          type: string
+          example: Central Perk
+        password:
+          type: string
+          example: rf1123
+        status:
+          type: integer
+          example: 1
+        role:
+          type: integer
+          example: 1
+    products:
+      required:
+      - product_name
+      - description
+      - photo
+      - price
+      - stock
+      - high_date
+      - modif_date
+      - id_status
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        product:
+          type: string
+          example: Hambuerguesa clasica
+        description:
+          type: string
+          example: Hamburguesa casera de carne vacuna, queso cheddar, lechuga y tomate
+        photo:
+          type: string
+          example: https://www.imgProductos.com/1.jpg
+        price:
+          type: string
+          example: "350"
+        high_date:
+          type: string
+          format: date
+          example: "2019-01-11"
+        modif_date:
+          type: string
+          format: date
+          example: "2019-01-11"
+        stock:
+          type: number
+          example: 3
+        id_status:
+          type: integer
+          example: Activo
+    productsUpdate:
+      required:
+      - product
+      - description
+      - photo
+      - price
+      - stock
+      - id_status
+      type: object
+      properties:
+        product:
+          type: string
+          example: Hambuerguesa clasica
+        description:
+          type: string
+          example: Hamburguesa casera de carne vacuna, queso cheddar, lechuga y tomate
+        photo:
+          type: string
+          example: https://www.imgProductos.com/1.jpg
+        price:
+          type: string
+          example: "350"
+        stock:
+          type: number
+          example: 3
+        id_status:
+          type: integer
+          example: Activo
+          
+    orders:
+      type: object
+      properties:
+        productId:
+          type: integer
+          example: 1
+        quantity:
+          type: integer
+          example: 2
+    ordersModification:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 3
+    ordersUpdates:
+      type: object
+      properties:
+        paymentMethod:
+          type: integer
+          example: 1
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
